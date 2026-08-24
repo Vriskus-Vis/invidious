@@ -63,22 +63,21 @@ def get_about_info(ucid) : AboutChannel
     tab_names = ["videos", "shorts", "streams"]
     auto_generated = false
   else
-    if auto_generated
-      author = initdata["header"]["interactiveTabbedHeaderRenderer"]["title"]["simpleText"].as_s
+    if auto_generated && (interactive_header = initdata["header"]["interactiveTabbedHeaderRenderer"]?)
+      author = interactive_header["title"]["simpleText"].as_s
       author_url = initdata["microformat"]["microformatDataRenderer"]["urlCanonical"].as_s
-      author_thumbnail = initdata["header"]["interactiveTabbedHeaderRenderer"]["boxArt"]["thumbnails"][0]["url"].as_s
+      author_thumbnail = interactive_header["boxArt"]["thumbnails"][0]["url"].as_s
 
       # Raises a KeyError on failure.
-      banners = initdata["header"]["interactiveTabbedHeaderRenderer"]?.try &.["banner"]?.try &.["thumbnails"]?
+      banners = interactive_header?.try &.["banner"]?.try &.["thumbnails"]?
       banner = banners.try &.[-1]?.try &.["url"].as_s?
 
-      description_base_node = initdata["header"]["interactiveTabbedHeaderRenderer"]["description"]
+      description_base_node = interactive_header["description"]
       # some channels have the description in a simpleText
       # ex: https://www.youtube.com/channel/UCQvWX73GQygcwXOTSf_VDVg/
       description_node = description_base_node.dig?("simpleText") || description_base_node
 
-      tags = initdata.dig?("header", "interactiveTabbedHeaderRenderer", "badges")
-        .try &.as_a.map(&.["metadataBadgeRenderer"]["label"].as_s) || [] of String
+      tags = interactive_header.dig?("badges").try &.as_a.map(&.["metadataBadgeRenderer"]["label"].as_s) || [] of String
     else
       author = initdata["metadata"]["channelMetadataRenderer"]["title"].as_s
       author_url = initdata["metadata"]["channelMetadataRenderer"]["channelUrl"].as_s
